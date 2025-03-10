@@ -37,7 +37,6 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
-      <!-- Carousel solo visible en dispositivos móviles -->
       <div id="categoriasCarousel" class="carousel slide d-md-none" data-ride="carousel">
         <div class="carousel-inner">
           {% for ca in categorias %}
@@ -71,7 +70,6 @@
         </a>
       </div>
 
-      <!-- Categorías en dispositivos no móviles -->
       <div class="container-fluid row justify-content-center d-none d-md-flex">
         {% for ca in categorias %}
         <div class="col-sm">
@@ -90,14 +88,12 @@
 
 <div class="container-fluid text-dark">
   <div id="myCarousel" class="carousel slide" data-ride="carousel" style="width: 100%;">
-    <!-- Indicadores -->
     <ol class="carousel-indicators">
       {% for imagen in carrusel %}
       <li data-target="#myCarousel" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></li>
       {% endfor %}
     </ol>
 
-    <!-- Slides -->
     <div class="carousel-inner">
       {% for imagen in carrusel %}
       <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -110,7 +106,6 @@
       {% endfor %}
     </div>
 
-    <!-- Controles -->
     <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
       <span class="carousel-control-prev-icon" aria-hidden="true"></span>
       <span class="sr-only">Anterior</span>

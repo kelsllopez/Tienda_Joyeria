@@ -55,7 +55,6 @@ class RegistroForm(UserCreationForm):
             'password2',
             Submit('submit', 'Registrarseuwu', css_class='btn btn-primary btn-lg')
         )
-        # Agregar las clases de Bootstrap a los campos del formulario
         self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Nombre de usuario'})
         self.fields['email'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Correo electrónico'})
         self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Contraseña'})
@@ -123,11 +122,9 @@ class PagosForm(forms.ModelForm):
         self.helper.form_method = 'post'
         self.helper.add_input(Submit('submit', 'Realizar Pagos'))
         
-        # Personalizar el widget para el campo numero_tarjeta
         self.fields['numero_tarjeta'].widget = forms.TextInput(attrs={'placeholder': 'xxxx xxxx xxxx xxxx', 'title': 'Ingrese 16 dígitos válidos'})
         self.fields['numero_tarjeta'].validators = [RegexValidator(r'^\d{16}$', 'Ingrese 16 dígitos válidos.')]
 
-        # Personalizar el widget para el campo valido_hasta
         self.fields['valido_hasta'].widget = forms.TextInput(attrs={'placeholder': 'MM/YY', 'title': 'Ingrese una fecha válida en el formato MM/YY'})
         self.fields['valido_hasta'].validators = [RegexValidator(r'^(0[1-9]|1[0-2])/\d{2}$', 'Ingrese una fecha válida en el formato MM/YY.')]
 

@@ -1,27 +1,18 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
-from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth import logout, login, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .forms import *
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, F, ExpressionWrapper, Count
 from django.contrib import messages
-from django.http import JsonResponse
 import json
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import F, ExpressionWrapper, fields
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-IVA_PERCENTAGE = 0.19
 from django.http import Http404
-from django.db.models import Count
+from django.views import View
 
 #INICIO
 
@@ -88,8 +79,8 @@ def detalleProducto(request, nombre):  # Cambia de slug a nombre
     productosRelacionados = Productos.objects.filter(categoria=producto.categoria)
     comentarios = Comentarios.objects.filter(producto=producto)
 
-    nuevo_comentario_id = None  # Inicialmente no hay comentario nuevo
-    mostrar_mas_comentarios = False  # Variable para controlar si se muestran más comentarios
+    nuevo_comentario_id = None 
+    mostrar_mas_comentarios = False  
 
     if request.method == 'POST':
         form = ComentarioForm(request.POST)
@@ -98,41 +89,35 @@ def detalleProducto(request, nombre):  # Cambia de slug a nombre
             comentario.producto = producto
 
             if request.user.is_authenticated:
-                comentario.usuario = request.user  # Asocia el comentario con el usuario autenticado
+                comentario.usuario = request.user  
             else:
-                # Asocia el comentario con un usuario anónimo (puedes ajustar esto según tus necesidades)
                 comentario.usuario = None  
 
             comentario.save()
-            nuevo_comentario_id = comentario.id  # Guarda el ID del comentario recién ingresado
+            nuevo_comentario_id = comentario.id  
     else:
         form = ComentarioForm()
 
-
-    # Si se ha enviado una solicitud para mostrar más comentarios
     if 'mostrar_mas' in request.GET:
         mostrar_mas_comentarios = True
 
-    # Modifica la consulta para incluir solo los comentarios del producto actual y asociados al usuario autenticado
-
-    # Agrega una consulta para contar la cantidad de personas que eligieron cada estrella
     conteo_estrellas = Comentarios.objects.filter(producto=producto).values('rating').annotate(count=Count('rating'))
 
     data = {
         'productos': producto,
         'productosRelacionados': productosRelacionados,
-        'comentarios': comentarios,  # Ahora solo incluye los comentarios del usuario autenticado
+        'comentarios': comentarios, 
         'form': form,
-        'nuevo_comentario_id': nuevo_comentario_id,  # Pasa el ID del comentario al contexto
-        'mostrar_mas_comentarios': mostrar_mas_comentarios,  # Pasa la variable de control al contexto
-        'conteo_estrellas': conteo_estrellas,  # Pasa el conteo de estrellas al contexto
+        'nuevo_comentario_id': nuevo_comentario_id,  
+        'mostrar_mas_comentarios': mostrar_mas_comentarios, 
+        'conteo_estrellas': conteo_estrellas, 
     }
 
     return render(request, 'productos/detalle.html', data)
 
 def listar_productos(request):
     productoss = Productos.objects.all()
-    title = "Listado de Productos"  # Set the title here
+    title = "Listado de Productos" 
     query = request.GET.get('q')
     if query:
         productoss = productoss.filter(Q(Nombre__icontains=query))
@@ -153,14 +138,11 @@ def eliminar_producto(request, nombre):
     producto = get_object_or_404(Productos, Nombre=nombre)
 
     producto.delete()
-
-    # Mensaje de éxito
     messages.success(request, "Producto eliminado correctamente.")
 
-    # Redirige a la lista de productos
     return redirect('/listar-productos')
 
-def modificar_producto(request, nombre):  # Cambia de slug a nombre
+def modificar_producto(request, nombre): 
     productos = get_object_or_404(Productos, Nombre=nombre)
     if request.method == 'POST':
         form = ProductoForm(request.POST, request.FILES, instance=productos)
@@ -185,16 +167,12 @@ def panel(request):
 
 
 def perfil_de_usuario(request):
-    # Lógica para la vista de Perfil de Usuario
     return render(request, 'panel/perfil_de_usuario.html')
 
 #MATERIAL
 
 def mostrar_materiales(request):
-    # Lógica para la vista de Materiales
     materiales = Material.objects.all()
-
-    # Búsqueda de materiales
     query = request.GET.get('q')
     if query:
         materiales = materiales.filter(Q(nombre__icontains=query))
@@ -202,7 +180,6 @@ def mostrar_materiales(request):
     return render(request, 'panel/material/mostrar_materiales.html', {'materiales': materiales})
 
 def agregar_material(request):
-    # Lógica para agregar un nuevo material
     if request.method == 'POST':
         form = MaterialForm(request.POST)
         if form.is_valid():
@@ -216,7 +193,6 @@ def agregar_material(request):
     return render(request, 'panel/material/agregar_material.html', {'form': form})
 
 def editar_material(request, material_id):
-    # Lógica para editar un material existente
     material = get_object_or_404(Material, id=material_id)
 
     if request.method == 'POST':
@@ -231,7 +207,6 @@ def editar_material(request, material_id):
     return render(request, 'panel/material/editar_material.html', {'form': form, 'material': material})
 
 def eliminar_material(request, material_id):
-    # Lógica para eliminar un material
     material = get_object_or_404(Material, id=material_id)
     
     if request.method == 'POST':
@@ -368,13 +343,11 @@ def add_to_cart(request, producto_id):
                     carro_item.producto_cantidad = cantidad
                     carro_item.save()
 
-                # Obtener 'stock_temp' de la sesión y convertirlo a diccionario si es una cadena
                 stock_temp_str = request.session.get('stock_temp', '{}')
                 stock_temp = json.loads(stock_temp_str)
 
                 stock_temp[producto_id] = producto.stock - carro_item.producto_cantidad
 
-                # Serializar antes de almacenar en la sesión
                 request.session['stock_temp'] = json.dumps(stock_temp, cls=DjangoJSONEncoder)
                 request.session.modified = True
 
@@ -396,18 +369,11 @@ def cart_page(request):
                 valida_hasta="2023-01-01",
                 numero_asociado=123
             )
-            # Obtén los elementos seleccionados del carrito
             items_seleccionados = Carro.objects.filter(usuario=user, id__in=selected_items)
-
-            # Asocia los elementos del carrito al nuevo pedido
             nuevo_pedido.carrito.set(items_seleccionados)
 
-            # Luego, puedes redirigir al usuario a la vista del pedido recién creado
             messages.success(request, 'Perfil actualizado exitosamente.')
             return redirect('tienda:pedido')
-
-
-
     context = {
         'carrito': carrito,
     }
@@ -420,19 +386,12 @@ def eliminar_items_carrito(request):
         selected_items = request.POST.getlist('selected_items')
 
         if selected_items:
-            # Obtiene los elementos a eliminar antes de borrarlos
             items_a_eliminar = Carro.objects.filter(usuario=user, id__in=selected_items)
-
-            # Elimina los elementos del carrito
             items_a_eliminar.delete()
 
-            # Agrega un mensaje indicando que los elementos se eliminaron con éxito
             messages.success(request, f"Elementos del carrito eliminados exitosamente.")
         else:
-            # Agrega un mensaje indicando que no se seleccionaron elementos para eliminar
             messages.warning(request, "No se seleccionaron elementos para eliminar.")
-
-    # Redirige al usuario a la página del carrito
     return redirect('tienda:cart')
 
 #PEDIDO
@@ -444,23 +403,21 @@ def procesar_pedido(request):
         form = PedidoForm(request.POST)
 
         if form.is_valid():
-            # Obtiene la dirección de envío y el método de pago seleccionados
             direccion_envio = form.cleaned_data['direccion_envio']
             metodo_pago = form.cleaned_data['metodo_pago']
 
             with transaction.atomic():
-                # Ejemplo de creación de un nuevo pedido y detalles del pedido:
                 nuevo_pedido = Pedidos.objects.create(
                     direccion_envio=direccion_envio,
                     metodo_pago=metodo_pago,
                     usuario=user,
-                    total=0,  # Calcula el total real según tus necesidades
+                    total=0,  
                     estado='Pendiente',
                 )
 
-                total_pedido = 0  # Inicializa el total del pedido
+                total_pedido = 0  
 
-                detalles_pedido = []  # Lista para almacenar detalles del pedido
+                detalles_pedido = []
 
                 for item in carrito:
                     detalle = DetallePedido.objects.create(
@@ -470,31 +427,25 @@ def procesar_pedido(request):
                         subtotal=item.subtotal,
                     )
 
-                    detalles_pedido.append(detalle)  # Agrega el detalle a la lista
+                    detalles_pedido.append(detalle)  
 
-                    # Actualiza el stock del producto
                     item.producto.stock -= item.producto_cantidad
                     item.producto.save()
 
-                    total_pedido += item.subtotal  # Actualiza el total del pedido
+                    total_pedido += item.subtotal
 
-                # Actualiza el total del pedido con el total calculado
                 nuevo_pedido.total = total_pedido
                 nuevo_pedido.save()
 
-                # Limpia el carrito después de procesar el pedido
                 carrito.delete()
 
-                # Pasa los detalles del pedido al contexto
                 context = {'detalles_pedido': detalles_pedido, 'pedido': nuevo_pedido}
 
-                # Redirige al usuario a la página de lista de pedidos con los detalles
                 return redirect('tienda:lista_pedidos')
 
     else:
         form = PedidoForm()
 
-    # Actualiza las opciones del formulario con las direcciones de envío y métodos de pago del usuario
     form.fields['direccion_envio'].queryset = DireccionEnvio.objects.filter(user=user)
     form.fields['metodo_pago'].queryset = Pagos.objects.filter(user=user)
 
@@ -517,7 +468,6 @@ def lista_pedidos(request):
     for pedido in pedidos:
         detalles_pedido = DetallePedido.objects.filter(pedido=pedido)
 
-        # Filtra los detalles de pedido donde el producto aún existe o el campo producto es NULL
         detalles_pedido = [detalle for detalle in detalles_pedido if detalle.producto or detalle.producto_id is None]
 
         detalles_pedidos.append(detalles_pedido)
@@ -526,13 +476,10 @@ def lista_pedidos(request):
 
 
 def administrar_pedidos(request):
-    # Obtener todos los pedidos
     pedidos = Pedidos.objects.all()
-
 
     return render(request, 'carrito/administrador.html', {'pedidos': pedidos})
 
-from django.views import View
 
 class VerPedidoView(View):
     template_name = 'carrito/ver_pedido.html'
@@ -556,13 +503,12 @@ class ModificarPedidoView(View):
         if form.is_valid():
             form.save()
             messages.success(request, "Estado modificado correctamente.")
-            return redirect('tienda:administrar_pedidos')  # Eliminé el uso de 'slug' ya que no estás utilizando ese campo
+            return redirect('tienda:administrar_pedidos') 
         return render(request, self.template_name, {'pedido': pedido, 'form': form})
 
 #UBICACIONES
 
 def ubicacion(request):
-    # Obtén las direcciones de envío del usuario
     direcciones = DireccionEnvio.objects.filter(user=request.user)
 
     if request.method == 'POST':
@@ -571,7 +517,6 @@ def ubicacion(request):
             nueva_direccion = form.save(commit=False)
             nueva_direccion.user = request.user
             nueva_direccion.save()
-            # Redirecciona para evitar envíos de formulario duplicados
             return redirect('tienda:ubicacion')
     else:
         form = DireccionEnvioForm()
@@ -585,7 +530,7 @@ def ubicacion_nuevas(request):
             nueva_direccion = form.save(commit=False)
             nueva_direccion.user = request.user
             nueva_direccion.save()
-            return redirect('tienda:ubicacion')  # Redirigir a la misma vista para agregar más ubicaciones
+            return redirect('tienda:ubicacion') 
     else:
         form = DireccionEnvioForm()
 
@@ -600,7 +545,7 @@ def editar_ubicacion(request, id):
         form = DireccionEnvioForm(request.POST, instance=ubicacion)
         if form.is_valid():
             form.save()
-            return redirect('tienda:ubicacion')  # Redirige a la página de ubicaciones
+            return redirect('tienda:ubicacion')  
     else:
         form = DireccionEnvioForm(instance=ubicacion)
 
@@ -609,17 +554,15 @@ def editar_ubicacion(request, id):
 def eliminar_ubicacion(request, id):
     ubicacion = DireccionEnvio.objects.get(id=id)
     ubicacion.delete()
-    return redirect('tienda:ubicacion')  # Redirige a la página de ubicaciones
+    return redirect('tienda:ubicacion') 
 
 #PERFIL
 
 def valoraciones(request):
-    # Obtén todas las valoraciones del usuario actual
     valoraciones_usuario = Comentarios.objects.filter(usuario=request.user)
     return render(request, 'perfil/valoraciones.html', {'valoraciones_usuario': valoraciones_usuario})
 
 def ajustes(request):
-    # Lógica para la página de Ajustes
     return render(request, 'perfil/ajuste/ajustes.html')
 
 #CONTACTO
@@ -722,7 +665,7 @@ def usuario_administrar_modificar(request, id):
         form = RegistroForm(request.POST)
         if form.is_valid():
             password = form.cleaned_data['password']
-            user.password = RegistroForm(password)  # Hash the password
+            user.password = RegistroForm(password) 
             user.save()
             return redirect('tienda:usuarioadministrar')
     else:

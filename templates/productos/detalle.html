@@ -87,7 +87,6 @@
     transform: rotateY(10deg);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
-  /* Estilos generales para las imágenes */
   .zoom {
       margin: 5px;
       overflow: hidden;
@@ -101,10 +100,9 @@
       transform: scale(1.1);
   }
 
-  /* Media query para ajustar el tamaño de las imágenes en pantallas pequeñas */
   @media only screen and (max-width: 768px) {
       .zoom img {
-          width: 100%; /* O ajusta el ancho según tus necesidades */
+          width: 100%;
           height: auto;
       }
   }
@@ -154,7 +152,6 @@
         </div>
       </div>
       <div class="col-md-6">
-        <!-- Contenido del carrito y otros elementos dentro de la tarjeta -->
         <h1 class="mb-0">
           {{ productos.Nombre }}
         </h1>
@@ -342,7 +339,7 @@
       btnPlus.addEventListener("click", function() {
         let qty = parseInt(txtQty.value, 10);
         qty = isNaN(qty) ? 0 : qty;
-        let stock = parseInt("{{ productos.stock }}", 10); // Obtener el valor del stock desde el contexto de Django
+        let stock = parseInt("{{ productos.stock }}", 10);
   
         if (qty < stock) {
           qty++;
@@ -352,10 +349,7 @@
   });
 
   document.addEventListener("DOMContentLoaded", function(event) {
-    // Obtén el nuevo_comentario_id del contexto
     const nuevo_comentario_id = {{ nuevo_comentario_id|default:"null" }};
-
-    // Si hay un nuevo_comentario_id, desplázate hasta ese comentario
     if (nuevo_comentario_id) {
         const comentario = document.getElementById(`comentario-${nuevo_comentario_id}`);
         if (comentario) {
@@ -366,11 +360,10 @@
 
 
 document.addEventListener("DOMContentLoaded", function() {
-  let mostrar_mas_comentarios = false; // Variable para controlar si se muestran más comentarios
+  let mostrar_mas_comentarios = false; 
   const btnMostrarMasComentarios = document.getElementById("mostrarMasComentarios");
   const btnOcultarComentarios = document.getElementById("ocultarComentarios");
   
-  // Función para mostrar más comentarios
   function mostrarMasComentarios() {
       const comentarios = document.querySelectorAll(".comment-container .box");
       comentarios.forEach((comentario, index) => {
@@ -383,7 +376,6 @@ document.addEventListener("DOMContentLoaded", function() {
       btnOcultarComentarios.style.display = "block";
   }
   
-  // Función para ocultar comentarios
   function ocultarComentarios() {
       const comentarios = document.querySelectorAll(".comment-container .box");
       comentarios.forEach((comentario, index) => {
@@ -415,17 +407,14 @@ $(document).ready(function () {
 var originalCentralImage;
 
 $(document).ready(function() {
-  // Al cargar la página, guarda la imagen central original
   originalCentralImage = $('#centralImage img').attr('src');
 });
 
 function changeCentralImage(url) {
-  // Cambia la imagen central al pasar el mouse sobre una imagen
   $('#centralImage img').attr('src', url);
 }
 
 function resetCentralImage() {
-  // Restaura la imagen central al salir del área de imágenes
   $('#centralImage img').attr('src', originalCentralImage);
 }
   </script>

@@ -43,7 +43,7 @@ class Productos(models.Model):
 #Comentarios y Valoracion
 class Comentarios(models.Model):
     producto = models.ForeignKey(Productos, on_delete=models.CASCADE, related_name='comentarios')
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Asociar el comentario con el usuario
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE) +
     comentario = models.TextField()
     rating = models.FloatField()
     fecha = models.DateTimeField(auto_now_add=True)
@@ -136,7 +136,7 @@ class Pedidos(models.Model):
         ordering = ['-creado']
 class DetallePedido(models.Model):
     pedido = models.ForeignKey(Pedidos, on_delete=models.CASCADE)
-    producto = models.ForeignKey(Productos, on_delete=models.SET_NULL, null=True)  # Cambiado a SET_NULL
+    producto = models.ForeignKey(Productos, on_delete=models.SET_NULL, null=True)  +
     cantidad = models.IntegerField()
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -150,7 +150,7 @@ class DetallePedido(models.Model):
 #Comentarios y Valoracion
 class Comentarios(models.Model):
     producto = models.ForeignKey(Productos, on_delete=models.CASCADE, related_name='comentarios')
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Asociar el comentario con el usuario
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE) +
     comentario = models.TextField()
     rating = models.FloatField()
     fecha = models.DateTimeField(auto_now_add=True)

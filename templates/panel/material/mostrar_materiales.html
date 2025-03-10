@@ -62,7 +62,6 @@
                 <td>{{ material.nombre }}</td>
                 <td>{{ material.created_at }}</td>
                 <td>
-                  <!-- Enlaces para editar y eliminar material -->
                   <a class="btn btn-secondary btn-sm"  href="{% url 'tienda:editar_material' material.id %}" type="button"><i class="bi bi-pencil-square"></i></a> 
                   <a  class="btn btn-danger btn-sm" href="{% url 'tienda:eliminar_material' material.id %}" type="button"><i class="bi bi-trash-fill"></i></a>
                 </td>

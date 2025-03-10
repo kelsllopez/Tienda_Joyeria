@@ -52,7 +52,6 @@
               {% else %}
                 <p class="card-text">Sexo: {{ perfil.get_sexo_display }}</p>
               {% endif %}
-          <!-- Agrega más campos según sea necesario -->
           <a href="{% url 'tienda:editar_perfil' user.id %}" class="btn btn-primary btn-editar">Editar Perfil</a>
         </div>
       </div>

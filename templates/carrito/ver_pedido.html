@@ -7,7 +7,6 @@
     <p>ID Pedido: {{ pedido.id }}</p>
     <p>Usuario: {{ pedido.usuario.username }}</p>
     <p>Estado: {{ pedido.estado }}</p>
-    <!-- Otros detalles del pedido que desees mostrar -->
 
     <a href="{% url 'tienda:administrar_pedidos'%}" class="btn btn-primary">Volver</a>
     <a href="{% url 'tienda:modificar_pedido' pedido.id %}" class="btn btn-primary">Modificar Estado</a>
